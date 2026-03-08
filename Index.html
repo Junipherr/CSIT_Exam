@@ -632,6 +632,15 @@
             if (firstUnanswered) {
                 firstUnanswered.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
+            
+            // Remove highlighting after 30 seconds
+            setTimeout(() => {
+                questions.forEach((question, index) => {
+                    const qNum = index + 1;
+                    const questionCard = document.getElementById(`question-${qNum}`);
+                    questionCard.classList.remove('unanswered-question');
+                });
+            }, 30000);
         }
 
         // Submit quiz
