@@ -543,6 +543,9 @@
             const questionCard = document.getElementById(`question-${questionNum}`);
             const options = questionCard.querySelectorAll('.option-label');
             
+            // Remove unanswered highlighting
+            questionCard.classList.remove('unanswered-question');
+            
             options.forEach(option => {
                 const input = option.querySelector('input');
                 option.classList.remove('selected-answer', 'correct-answer', 'wrong-answer');
