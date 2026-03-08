@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Comprehensive Examination Questionnaire</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class'
+        }
+    </script>
     <style>
         .question-card {
             transition: all 0.3s ease;
@@ -12,16 +17,31 @@
         .question-card:hover {
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
+        .dark .question-card:hover {
+            box-shadow: 0 4px 6px -1px rgba(255, 255, 255, 0.1), 0 2px 4px -1px rgba(255, 255, 255, 0.06);
+        }
         .correct-answer {
             background-color: #d1fae5 !important;
+            border-color: #10b981 !important;
+        }
+        .dark .correct-answer {
+            background-color: #064e3b !important;
             border-color: #10b981 !important;
         }
         .wrong-answer {
             background-color: #fee2e2 !important;
             border-color: #ef4444 !important;
         }
+        .dark .wrong-answer {
+            background-color: #7f1d1d !important;
+            border-color: #ef4444 !important;
+        }
         .selected-answer {
             background-color: #dbeafe !important;
+            border-color: #3b82f6 !important;
+        }
+        .dark .selected-answer {
+            background-color: #1e3a8a !important;
             border-color: #3b82f6 !important;
         }
         .unanswered-question {
@@ -29,23 +49,34 @@
             border-color: #f59e0b !important;
             animation: pulse 0.5s ease-in-out 3;
         }
+        .dark .unanswered-question {
+            background-color: #78350f !important;
+            border-color: #f59e0b !important;
+        }
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.7; }
         }
+        /* Dark mode toggle button styles */
+        .dark-mode-toggle {
+            transition: all 0.3s ease;
+        }
+        .dark-mode-toggle:hover {
+            transform: scale(1.1);
+        }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen py-8">
+<body class="bg-gray-100 dark:bg-gray-900 min-h-screen py-8 transition-colors duration-300">
     <!-- Login Screen -->
     <div id="login-screen" class="container mx-auto px-2 sm:px-4 max-w-md">
-        <div class="bg-white rounded-lg shadow-lg p-6 sm:p-8 mt-20">
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 sm:p-8 mt-20">
             <div class="text-center mb-6">
-                <h1 class="text-2xl sm:text-3xl font-bold text-blue-600">COMPREHENSIVE EXAMINATION</h1>
-                <p class="text-gray-500 mt-2">CSIT DEPT.</p>
+                <h1 class="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400">COMPREHENSIVE EXAMINATION</h1>
+                <p class="text-gray-500 dark:text-gray-400 mt-2">CSIT DEPT.</p>
             </div>
             <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-bold mb-2" for="username">Enter your name to start:</label>
-                <input type="text" id="username" placeholder="Your name" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-blue-500">
+                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="username">Enter your name to start:</label>
+                <input type="text" id="username" placeholder="Your name" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 dark:text-gray-200 dark:bg-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-blue-500">
             </div>
             <div id="login-error" class="text-red-500 text-sm mb-4 hidden">Please enter your name!</div>
             <button onclick="startQuiz()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg w-full transition duration-200">
@@ -67,19 +98,30 @@
                     <h1 class="text-xl sm:text-3xl font-bold text-center sm:text-left">COMPREHENSIVE EXAMINATION</h1>
                     <p class="text-blue-100 text-sm sm:text-base">CSIT DEPT.</p>
                 </div>
-                <div class="mt-2 sm:mt-0 text-right">
+<div class="mt-2 sm:mt-0 text-right flex items-center gap-3">
                     <p class="text-sm text-blue-200">Student: <span id="display-username" class="font-bold text-white"></span></p>
+                    <!-- Dark Mode Toggle Button -->
+                    <button id="dark-mode-toggle" onclick="toggleDarkMode()" class="dark-mode-toggle p-2 rounded-full bg-white/20 hover:bg-white/30 text-white">
+                        <!-- Sun Icon (shown in dark mode) -->
+                        <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd" />
+                        </svg>
+                        <!-- Moon Icon (shown in light mode) -->
+                        <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+                        </svg>
+                    </button>
                 </div>
             </div>
         </div>
 
-        <!-- Progress Bar -->
-        <div class="bg-white rounded-lg shadow p-3 sm:p-4 mb-4 sm:mb-6">
+<!-- Progress Bar -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-3 sm:p-4 mb-4 sm:mb-6">
             <div class="flex justify-between mb-2">
-                <span class="text-xs sm:text-sm font-medium text-gray-700">Progress</span>
-                <span id="progress-text" class="text-xs sm:text-sm font-medium text-gray-700">0 / 215</span>
+                <span class="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Progress</span>
+                <span id="progress-text" class="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">0 / 215</span>
             </div>
-            <div class="w-full bg-gray-200 rounded-full h-2">
+            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                 <div id="progress-bar" class="bg-blue-600 h-2 rounded-full" style="width: 0%"></div>
             </div>
         </div>
@@ -89,10 +131,10 @@
             <!-- Questions will be dynamically inserted here -->
         </div>
 
-        <!-- Submit Button -->
+<!-- Submit Button -->
         <div class="sticky bottom-2 sm:bottom-4 mt-4 sm:mt-8">
-            <div class="bg-white rounded-lg shadow-lg p-3 sm:p-4 flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-0">
-                <div class="text-gray-600 text-xs sm:text-sm">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-3 sm:p-4 flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-0">
+                <div class="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
                     <span id="answered-count">0</span> questions answered
                 </div>
                 <button id="submit-btn" onclick="submitQuiz()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 sm:py-3 px-4 sm:px-8 rounded-lg shadow transition duration-200 flex items-center gap-2 text-sm sm:text-base w-full sm:w-auto justify-center">
@@ -104,34 +146,34 @@
             </div>
         </div>
 
-                <!-- Results Modal -->
+<!-- Results Modal -->
         <div id="results-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 p-2">
-            <div class="bg-white rounded-lg shadow-2xl p-4 sm:p-8 max-w-sm sm:max-w-2xl w-full mx-2 sm:mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-4 sm:p-8 max-w-sm sm:max-w-2xl w-full mx-2 sm:mx-4 max-h-[90vh] overflow-y-auto">
                 <div class="text-center">
                     <div id="score-icon" class="text-4xl sm:text-6xl mb-2 sm:mb-4"></div>
-                    <h2 class="text-xl sm:text-3xl font-bold mb-2 sm:mb-4">Exam Results</h2>
-                    <div class="bg-gray-100 rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
-                        <div class="text-3xl sm:text-5xl font-bold text-blue-600 mb-1 sm:mb-2" id="score-display">0</div>
-                        <div class="text-gray-600 text-sm sm:text-base">out of 215 correct</div>
-                        <div class="text-xl sm:text-2xl font-semibold mt-1 sm:mt-2" id="percentage-display">0%</div>
-                        <div id="result-message" class="text-xs sm:text-sm text-gray-500 mt-2"></div>
+                    <h2 class="text-xl sm:text-3xl font-bold mb-2 sm:mb-4 dark:text-white">Exam Results</h2>
+                    <div class="bg-gray-100 dark:bg-gray-700 rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
+                        <div class="text-3xl sm:text-5xl font-bold text-blue-600 dark:text-blue-400 mb-1 sm:mb-2" id="score-display">0</div>
+                        <div class="text-gray-600 dark:text-gray-400 text-sm sm:text-base">out of 215 correct</div>
+                        <div class="text-xl sm:text-2xl font-semibold mt-1 sm:mt-2 dark:text-gray-300" id="percentage-display">0%</div>
+                        <div id="result-message" class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-2"></div>
                         <div id="roast-message" class="text-xs sm:text-sm mt-2 font-medium"></div>
                     </div>
                     <div class="grid grid-cols-2 gap-2 sm:gap-4 mb-4 sm:mb-6">
-                        <div class="bg-green-100 rounded-lg p-3 sm:p-4">
-                            <div class="text-xl sm:text-2xl font-bold text-green-600" id="correct-count">0</div>
-                            <div class="text-xs sm:text-sm text-green-800">Correct</div>
+                        <div class="bg-green-100 dark:bg-green-900 rounded-lg p-3 sm:p-4">
+                            <div class="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400" id="correct-count">0</div>
+                            <div class="text-xs sm:text-sm text-green-800 dark:text-green-300">Correct</div>
                         </div>
-                        <div class="bg-red-100 rounded-lg p-3 sm:p-4">
-                            <div class="text-xl sm:text-2xl font-bold text-red-600" id="wrong-count">0</div>
-                            <div class="text-xs sm:text-sm text-red-800">Wrong</div>
+                        <div class="bg-red-100 dark:bg-red-900 rounded-lg p-3 sm:p-4">
+                            <div class="text-xl sm:text-2xl font-bold text-red-600 dark:text-red-400" id="wrong-count">0</div>
+                            <div class="text-xs sm:text-sm text-red-800 dark:text-red-300">Wrong</div>
                         </div>
                     </div>
                     
                     <!-- Wrong Answers Summary -->
                     <div id="wrong-answers-summary" class="mb-4 hidden">
-                        <h3 class="text-lg font-semibold text-red-600 mb-2">Your Wrong Answers</h3>
-                        <div id="wrong-answers-list" class="text-left max-h-48 overflow-y-auto bg-red-50 rounded-lg p-3 border border-red-200">
+                        <h3 class="text-lg font-semibold text-red-600 dark:text-red-400 mb-2">Your Wrong Answers</h3>
+                        <div id="wrong-answers-list" class="text-left max-h-48 overflow-y-auto bg-red-50 dark:bg-red-900/30 rounded-lg p-3 border border-red-200 dark:border-red-800">
                             <!-- Wrong answers will be inserted here -->
                         </div>
                     </div>
@@ -148,12 +190,12 @@
             </div>
         </div>
 
-        <!-- Answer Review Modal -->
+<!-- Answer Review Modal -->
         <div id="answers-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 p-2">
-            <div class="bg-white rounded-lg shadow-2xl p-3 sm:p-6 max-w-sm sm:max-w-4xl w-full mx-2 sm:mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-3 sm:p-6 max-w-sm sm:max-w-4xl w-full mx-2 sm:mx-4 max-h-[90vh] overflow-y-auto">
                 <div class="flex justify-between items-center mb-3 sm:mb-4">
-                    <h2 class="text-lg sm:text-2xl font-bold">Answer Review</h2>
-                    <button onclick="closeAnswersModal()" class="text-gray-500 hover:text-gray-700 p-1">
+                    <h2 class="text-lg sm:text-2xl font-bold dark:text-white">Answer Review</h2>
+                    <button onclick="closeAnswersModal()" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-1">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>
@@ -482,23 +524,23 @@
             const container = document.getElementById('questions-container');
             const fragment = document.createDocumentFragment();
             
-            questions.forEach((question, index) => {
+questions.forEach((question, index) => {
                 const qNum = index + 1;
                 const card = document.createElement('div');
-                card.className = 'question-card bg-white rounded-lg shadow p-3 sm:p-5 border-l-4 border-blue-500';
+                card.className = 'question-card bg-white dark:bg-gray-800 rounded-lg shadow p-3 sm:p-5 border-l-4 border-blue-500';
                 card.id = 'question-' + qNum;
                 
                 const optionsHTML = ['a', 'b', 'c', 'd'].map((opt, idx) => `
-                    <label class="flex items-start sm:items-center p-2 sm:p-3 rounded-lg border-2 border-gray-200 cursor-pointer hover:bg-gray-50 transition duration-200 option-label" for="q${qNum}-${opt}">
+                    <label class="flex items-start sm:items-center p-2 sm:p-3 rounded-lg border-2 border-gray-200 dark:border-gray-600 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition duration-200 option-label" for="q${qNum}-${opt}">
                         <input type="radio" name="question-${qNum}" id="q${qNum}-${opt}" value="${opt}" class="w-4 h-4 text-blue-600 mt-0.5 sm:mt-0 flex-shrink-0" onchange="selectAnswer(${qNum}, '${opt}')">
-                        <span class="ml-2 sm:ml-3 text-gray-700 text-xs sm:text-sm">
-                            <span class="font-medium text-blue-600 uppercase">${opt}.</span> ${escapeHTML(question.options[idx])}
+                        <span class="ml-2 sm:ml-3 text-gray-700 dark:text-gray-300 text-xs sm:text-sm">
+                            <span class="font-medium text-blue-600 dark:text-blue-400 uppercase">${opt}.</span> ${escapeHTML(question.options[idx])}
                         </span>
                     </label>
                 `).join('');
                 
                 card.innerHTML = `
-                    <h3 class="text-sm sm:text-lg font-semibold text-gray-800 mb-2 sm:mb-4">
+                    <h3 class="text-sm sm:text-lg font-semibold text-gray-800 dark:text-white mb-2 sm:mb-4">
                         <span class="bg-blue-600 text-white rounded-full w-6 h-6 sm:w-8 sm:h-8 inline-flex items-center justify-center mr-1 sm:mr-2 text-xs sm:text-sm">${qNum}</span>
                         ${escapeHTML(question.q)}
                     </h3>
@@ -754,20 +796,20 @@
             const reviewContainer = document.getElementById('answers-review');
             let html = '';
             
-            questions.forEach((question, index) => {
+questions.forEach((question, index) => {
                 const qNum = index + 1;
                 const userAnswer = userAnswers[qNum];
                 const isCorrect = userAnswer === question.answer;
                 
                 html += `
-                    <div class="p-3 rounded-lg ${isCorrect ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}">
+                    <div class="p-3 rounded-lg ${isCorrect ? 'bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800' : 'bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800'}">
                         <div class="flex items-start">
-                            <span class="font-bold ${isCorrect ? 'text-green-600' : 'text-red-600'} mr-2">${qNum}.</span>
+                            <span class="font-bold ${isCorrect ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'} mr-2">${qNum}.</span>
                             <div class="flex-1">
-                                <p class="text-sm text-gray-800">${escapeHTML(question.q)}</p>
+                                <p class="text-sm text-gray-800 dark:text-gray-200">${escapeHTML(question.q)}</p>
                                 <div class="mt-2 text-sm">
-                                    <p><span class="font-medium">Your answer:</span> ${userAnswer ? userAnswer.toUpperCase() + '. ' + escapeHTML(question.options['abcd'.indexOf(userAnswer)]) : 'Not answered'}</p>
-                                    <p><span class="font-medium text-green-600">Correct answer:</span> ${question.answer.toUpperCase()}. ${escapeHTML(question.options['abcd'.indexOf(question.answer)])}</p>
+                                    <p class="dark:text-gray-300"><span class="font-medium">Your answer:</span> ${userAnswer ? userAnswer.toUpperCase() + '. ' + escapeHTML(question.options['abcd'.indexOf(userAnswer)]) : 'Not answered'}</p>
+                                    <p><span class="font-medium text-green-600 dark:text-green-400">Correct answer:</span> ${question.answer.toUpperCase()}. ${escapeHTML(question.options['abcd'.indexOf(question.answer)])}</p>
                                 </div>
                             </div>
                             <span class="text-xl">${isCorrect ? '✓' : '✗'}</span>
@@ -786,11 +828,43 @@
             document.getElementById('results-modal').classList.add('hidden');
         }
 
-        // Close answers modal
+// Close answers modal
         function closeAnswersModal() {
             document.getElementById('answers-modal').classList.add('hidden');
             document.getElementById('results-modal').classList.remove('hidden');
         }
+
+        // Dark Mode Toggle Function
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            const sunIcon = document.getElementById('sun-icon');
+            const moonIcon = document.getElementById('moon-icon');
+            
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.setItem('darkMode', 'light');
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('darkMode', 'dark');
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+            }
+        }
+
+        // Check for saved dark mode preference on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const darkModePreference = localStorage.getItem('darkMode');
+            const sunIcon = document.getElementById('sun-icon');
+            const moonIcon = document.getElementById('moon-icon');
+            
+            if (darkModePreference === 'dark' || (!darkModePreference && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+                if (sunIcon) sunIcon.classList.remove('hidden');
+                if (moonIcon) moonIcon.classList.add('hidden');
+            }
+        });
     </script>
 </body>
 </html>
