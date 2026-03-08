@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprehensive Examination Questionnaire</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .question-card {
+            transition: all 0.3s ease;
+        }
+        .question-card:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .correct-answer {
+            background-color: #d1fae5 !important;
+            border-color: #10b981 !important;
+        }
+        .wrong-answer {
+            background-color: #fee2e2 !important;
+            border-color: #ef4444 !important;
+        }
+        .selected-answer {
+            background-color: #dbeafe !important;
+            border-color: #3b82f6 !important;
+        }
+        .unanswered-question {
+            background-color: #fef3c7 !important;
+            border-color: #f59e0b !important;
+            animation: pulse 0.5s ease-in-out 3;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen py-8">
+    <!-- Login Screen -->
+    <div id="login-screen" class="container mx-auto px-2 sm:px-4 max-w-md">
+        <div class="bg-white rounded-lg shadow-lg p-6 sm:p-8 mt-20">
+            <div class="text-center mb-6">
+                <h1 class="text-2xl sm:text-3xl font-bold text-blue-600">COMPREHENSIVE EXAMINATION</h1>
+                <p class="text-gray-500 mt-2">CSIT DEPT.</p>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="username">Enter your name to start:</label>
+                <input type="text" id="username" placeholder="Your name" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-blue-500">
+            </div>
+            <div id="login-error" class="text-red-500 text-sm mb-4 hidden">Please enter your name!</div>
+            <button onclick="startQuiz()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg w-full transition duration-200">
+                Start Exam
+            </button>
+            <div id="existing-user" class="mt-4 hidden">
+                <p class="text-sm text-gray-600">Welcome back, <span id="saved-username" class="font-bold"></span>!</p>
+                <p class="text-xs text-gray-500">Your previous progress has been loaded.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quiz Screen -->
+    <div id="quiz-screen" class="hidden container mx-auto px-2 sm:px-4 max-w-4xl">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg shadow-lg p-4 sm:p-6 mb-4 sm:mb-8 text-white">
+            <div class="flex flex-col sm:flex-row justify-between items-center">
+                <div>
+                    <h1 class="text-xl sm:text-3xl font-bold text-center sm:text-left">COMPREHENSIVE EXAMINATION</h1>
+                    <p class="text-blue-100 text-sm sm:text-base">CSIT DEPT.</p>
+                </div>
+                <div class="mt-2 sm:mt-0 text-right">
+                    <p class="text-sm text-blue-200">Student: <span id="display-username" class="font-bold text-white"></span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="bg-white rounded-lg shadow p-3 sm:p-4 mb-4 sm:mb-6">
+            <div class="flex justify-between mb-2">
+                <span class="text-xs sm:text-sm font-medium text-gray-700">Progress</span>
+                <span id="progress-text" class="text-xs sm:text-sm font-medium text-gray-700">0 / 215</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2">
+                <div id="progress-bar" class="bg-blue-600 h-2 rounded-full" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <!-- Questions Container -->
+        <div id="questions-container" class="space-y-3 sm:space-y-4">
+            <!-- Questions will be dynamically inserted here -->
+        </div>
+
+        <!-- Submit Button -->
+        <div class="sticky bottom-2 sm:bottom-4 mt-4 sm:mt-8">
+            <div class="bg-white rounded-lg shadow-lg p-3 sm:p-4 flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-0">
+                <div class="text-gray-600 text-xs sm:text-sm">
+                    <span id="answered-count">0</span> questions answered
+                </div>
+                <button id="submit-btn" onclick="submitQuiz()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 sm:py-3 px-4 sm:px-8 rounded-lg shadow transition duration-200 flex items-center gap-2 text-sm sm:text-base w-full sm:w-auto justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg>
+                    Submit Answers
+                </button>
+            </div>
+        </div>
+
+                <!-- Results Modal -->
+        <div id="results-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 p-2">
+            <div class="bg-white rounded-lg shadow-2xl p-4 sm:p-8 max-w-sm sm:max-w-2xl w-full mx-2 sm:mx-4 max-h-[90vh] overflow-y-auto">
+                <div class="text-center">
+                    <div id="score-icon" class="text-4xl sm:text-6xl mb-2 sm:mb-4"></div>
+                    <h2 class="text-xl sm:text-3xl font-bold mb-2 sm:mb-4">Exam Results</h2>
+                    <div class="bg-gray-100 rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
+                        <div class="text-3xl sm:text-5xl font-bold text-blue-600 mb-1 sm:mb-2" id="score-display">0</div>
+                        <div class="text-gray-600 text-sm sm:text-base">out of 215 correct</div>
+                        <div class="text-xl sm:text-2xl font-semibold mt-1 sm:mt-2" id="percentage-display">0%</div>
+                        <div id="result-message" class="text-xs sm:text-sm text-gray-500 mt-2"></div>
+                        <div id="roast-message" class="text-xs sm:text-sm mt-2 font-medium"></div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 sm:gap-4 mb-4 sm:mb-6">
+                        <div class="bg-green-100 rounded-lg p-3 sm:p-4">
+                            <div class="text-xl sm:text-2xl font-bold text-green-600" id="correct-count">0</div>
+                            <div class="text-xs sm:text-sm text-green-800">Correct</div>
+                        </div>
+                        <div class="bg-red-100 rounded-lg p-3 sm:p-4">
+                            <div class="text-xl sm:text-2xl font-bold text-red-600" id="wrong-count">0</div>
+                            <div class="text-xs sm:text-sm text-red-800">Wrong</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Wrong Answers Summary -->
+                    <div id="wrong-answers-summary" class="mb-4 hidden">
+                        <h3 class="text-lg font-semibold text-red-600 mb-2">Your Wrong Answers</h3>
+                        <div id="wrong-answers-list" class="text-left max-h-48 overflow-y-auto bg-red-50 rounded-lg p-3 border border-red-200">
+                            <!-- Wrong answers will be inserted here -->
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-2 sm:gap-4 justify-center flex-col sm:flex-row">
+                        <button onclick="showAnswers()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 sm:py-3 px-4 sm:px-6 rounded-lg transition duration-200 text-sm sm:text-base">
+                            View All Answers
+                        </button>
+                        <button onclick="closeModal()" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 sm:py-3 px-4 sm:px-6 rounded-lg transition duration-200 text-sm sm:text-base">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Answer Review Modal -->
+        <div id="answers-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 p-2">
+            <div class="bg-white rounded-lg shadow-2xl p-3 sm:p-6 max-w-sm sm:max-w-4xl w-full mx-2 sm:mx-4 max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center mb-3 sm:mb-4">
+                    <h2 class="text-lg sm:text-2xl font-bold">Answer Review</h2>
+                    <button onclick="closeAnswersModal()" class="text-gray-500 hover:text-gray-700 p-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div id="answers-review" class="space-y-2 max-h-[60vh] sm:max-h-[70vh] overflow-y-auto">
+                    <!-- Answers will be inserted here -->
+                </div>
+                <div class="mt-3 sm:mt-4 flex justify-center">
+                    <button onclick="closeAnswersModal()" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-5 sm:px-6 rounded-lg transition duration-200 text-sm sm:text-base">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Questions data
+        const questions = [
+            { q: "This pertains to a chapter of document which emphasizes the first time Rizal was sent to study in Binan, Laguna.", options: ["Chapter 4", "Chapter 2", "Chapter 1", "Chapter 3"], answer: "d" },
+            { q: "She is considered as Rizal's first love.", options: ["Segunda Katigbak", "Consuelo Ortega", "Leonor Valenzuela", "Josephine Bracken"], answer: "a" },
+            { q: "He is known as the professor of Sanskrit at the University of Leiden.", options: ["A.B Meyer", "Hendrik Kern", "Wilhelm Joest", "Fedor Jagor"], answer: "b" },
+            { q: "This chapter represents the highlights of Rizal's childhood in Calamba, Laguna.", options: ["Chapter 3", "Chapter 2", "Chapter 4", "Chapter 1"], answer: "b" },
+            { q: "She is the first teacher of Rizal.", options: ["Lucas Padua", "Donya Teodora", "Leon Monroy", "Maestro Celestino"], answer: "b" },
+            { q: "This university is where our National Hero studied Medicine.", options: ["University of San Carlos", "UP School Med", "DLSU SM", "University of Sto. Tomas"], answer: "d" },
+            { q: "He received his first degree in 1877.", options: ["BA Economics", "Bachelor of Laws", "B PolSci", "Bachelor of Arts"], answer: "d" },
+            { q: "This chapter is considered as Rizal's devastated experience because her mother was put into jail leaving them without guidance.", options: ["Chapter 5", "Chapter 8", "Chapter 7", "Chapter 6"], answer: "d" },
+            { q: "This chapter has no significant events in the life of our National Hero.", options: ["Chapter 6", "Chapter 7", "Chapter 5", "Chapter 8"], answer: "c" },
+            { q: "He encourages Rizal to study Philosophy and Natural Sciences.", options: ["Fr. Balagtas", "Fr. Francisco De Paula Sanchez", "Fr. Jose Villaclara", "Pablo Pastells"], answer: "c" },
+            { q: "He is the director of the Ethnographic Museum in Dresden, Germany.", options: ["Hendrik Kern", "A.B Meyer", "Rudolf Virchow", "Wilhelm Joest"], answer: "b" },
+            { q: "He is the president of the Berlin Society for Anthropology, Ethnology and Prehistory.", options: ["Rudolf Virchow", "A.B Meyer", "Fedor Jagor", "Hendrik Kern"], answer: "a" },
+            { q: "In what month, date and year did our National Hero enrolled at the Universidad Central de Madrid.", options: ["October 08, 1881", "October 08, 1882", "Nov. 08, 1882", "November 08, 1881"], answer: "b" },
+            { q: "He is an Australian Scholar who published books about Philippine ethnological topics.", options: ["Wilhelm Joest", "Resil Mojares", "Francisco Sanchez", "Ferdinand Blumentritt"], answer: "d" },
+            { q: "This refers to the specialization of Rizal in the field of medicine.", options: ["Pediatrics", "Internal Medicine", "Ophthalmology", "Orthopedics"], answer: "c" },
+            { q: "This pertains to the years where our National Hero was officially exiled in Dapitan City.", options: ["1892-1896", "1891-1895", "1890-1894", "1893-1897"], answer: "a" },
+            { q: "In retrospect, these years are considered as the Golden Ages of Dapitan because of the help of Dr. Jose Rizal.", options: ["1890-1894", "1892-1896", "1891-1895", "1893-1897"], answer: "b" },
+            { q: "In what year did Rizal was trained to study in the field of Social Sciences in Germany.", options: ["1887", "1886", "1889", "1888"], answer: "b" },
+            { q: "This year deals with the victory of our National Hero as he won a lottery in Dapitan City.", options: ["September 19, 1891", "September 20, 1891", "September 22, 1891", "September 21, 1891"], answer: "d" },
+            { q: "The gifted physician-novelist of the propaganda?", options: ["Bonifacio", "Emilio Aguinaldo", "Silang", "Rizal"], answer: "d" },
+            { q: "The number of languages which Rizal could speak?", options: ["24", "22", "More or Less 22", "23"], answer: "b" },
+            { q: "First written novel of Rizal.", options: ["Touch me Not", "El Filibusterismo", "Noli Me Tangere", "Bagong Pilipinas"], answer: "c" },
+            { q: "The place where the novel Noli Me Tangere was published.", options: ["France", "Thailand", "Berlin", "USA"], answer: "c" },
+            { q: "The City where the novel the El Filibusterismo was published.", options: ["Spain", "Berlin", "Ghent", "Italy"], answer: "c" },
+            { q: "The Spanish priest who denounced Dr. Rizal's novels as enemies of the Catholic region?", options: ["Fr. Mariano Rodrigues", "Fr. Jose Burgos", "Fr. Jose Rodriguez", "Fr. Rodrigo Rodrigues"], answer: "c" },
+            { q: "A supporter of the propaganda movement and Rizal's best friend.", options: ["Burgos", "Lucke", "Blumentritt", "Ibarra"], answer: "c" },
+            { q: "The first poem written by Rizal.", options: ["Noli Me Tangere", "Mahal kong Pilipinas", "Sa aking mga kabata", "El Fili"], answer: "c" },
+            { q: "The best poem ever written by Dr. Jose Rizal.", options: ["Mi Ultimo Adios", "Mahal kong Pilipinas", "El Fili", "Sa aking mga kabata"], answer: "a" },
+            { q: "The most cultured of the reformist.", options: ["Aguinaldo", "Bonifacio", "Silang", "Rizal"], answer: "d" },
+            { q: "Know as 'Dimasalang' and 'Laon Laan'.", options: ["Rizal", "Bonifacio", "Silang", "Aguinaldo"], answer: "a" },
+            { q: "It is the scientific study of human groups.", options: ["Sociology", "Psychology", "Philosophy", "Biology"], answer: "a" },
+            { q: "According to sociology, the self is a product of what?", options: ["School", "Society", "Family", "Environment"], answer: "b" },
+            { q: "The process of imaginatively occupying the position of another person and viewing the self and the situation from that person's perspective.", options: ["I", "Self-Differentiation", "Me", "Role Taking"], answer: "d" },
+            { q: "According to Plato and Aristotle in philosophical view of the self, we are called _________.", options: ["Protean", "Rational", "Irrational", "Christians"], answer: "b" },
+            { q: "An artichoke view that asserts that a person comes into being as a bare existence and exists without a fixed essence by choosing and standing accountable for our choices, we can create a 'self'.", options: ["Existentialism", "Artichoke View", "Philosophical View", "Avocado View"], answer: "a" },
+            { q: "A philosophical view which is enduring, stable self is seen as existing at the core of a person.", options: ["Existentialism", "Artichoke View", "Philosophical View", "Avocado View"], answer: "d" },
+            { q: "A philosophical view which is a person is understood as protean with no enduring stable core.", options: ["Avocado View", "Artichoke View", "Philosophical View", "Existentialism"], answer: "b" },
+            { q: "The following are the three key qualities of interdisciplinary learning, except.", options: ["Grounded in Disciplines", "Purposeful", "Applicable", "Integrative"], answer: "c" },
+            { q: "It is generally defined as the process of learning to study different disciplines to create a new understanding.", options: ["Interconnection", "International", "Intermediate", "Interdisciplinary"], answer: "d" },
+            { q: "Is the union of elements (such as body, emotions, thoughts, and sensations) that constitute the individuality and identity of a person.", options: ["Self", "Spirit", "Man", "Animals"], answer: "a" },
+            { q: "Analogy: Textbooks, digital resources, internet: Resources :: Text, graphics, Animation: ______________", options: ["Modalities", "Special features of computer-based presentation", "None of the mentioned", "Designs"], answer: "a" },
+            { q: "Feb easily responded to the message sent by Zyra on Facebook. The message in Response to Zyra's message is called?", options: ["Feedback", "Hugback", "Tweet", "Reply"], answer: "a" },
+            { q: "The one who delivers the message in the process of communication in the__________.", options: ["Sender", "Channel", "Receiver", "Noise"], answer: "a" },
+            { q: "What happens to communication when the sender and the receiver apply different meanings to the same message?", options: ["There will be a misunderstanding that leads to break-ups.", "There will be no communication.", "The communication may succeed or fail.", "The communication might not exist."], answer: "c" },
+            { q: "This type of public speaking is done to highlight information that cannot be solely delivered by memory.", options: ["Oration", "On-the-spot Speech", "Extemporaneous Speech", "Read Speech"], answer: "d" },
+            { q: "Kent encountered a signal interruption while talking to Archie on the phone. What means does the message pass through?", options: ["Path", "Society", "Channel", "Medium"], answer: "c" },
+            { q: "This refers to the receptive channel of communication which is realized by the sense of hearing.", options: ["Aural", "Olfactory", "Gustatory", "Tactile"], answer: "a" },
+            { q: "Analogy: Dark text: ___________ :: White text: Dark Background", options: ["Dark text", "White Background", "Light Background", "Light text"], answer: "c" },
+            { q: "This type of public speaking requires the two opposite sides to solve a problem through arguments.", options: ["Oration", "Impromptu speaking", "Debate", "Extemporaneous"], answer: "c" },
+            { q: "Which of the following does not belong to the group?", options: ["Memorized speech", "Extemporaneous speech", "Read speech", "Smart talking"], answer: "d" },
+            { q: "Regular, repeated or recurring forms or designs observed in natural objects.", options: ["Pattern", "Fibonacci Sequence", "Exponential growth decay", "Numbers"], answer: "a" },
+            { q: "An ordered list of numbers called terms that may have repeated values.", options: ["Exponential growth decay", "Fibonacci Sequence", "Numbers", "Pattern"], answer: "d" },
+            { q: "This sequence is formed by adding the preceding two numbers, starting with 0 and 1.", options: ["Pattern", "Exponential growth decay", "Fibonacci Sequence", "Numbers"], answer: "c" },
+            { q: "The symbol (a,b) denotes the ____________ consisting of a and b.", options: ["Subset", "Pattern", "Ordered pair", "Cartesian set"], answer: "c" },
+            { q: "Two functions are said to be equal if and only they have the same set of ordered pairs (x,y).", options: ["Ordered pair", "Cartesian set", "Equality of functions", "Functions"], answer: "c" },
+            { q: "To make predictions, mathematical models can generate analysis and interpretation using existing data.", options: ["Mathematics is indispensable", "Mathematics for Control", "Mathematics for Organization", "Mathematics for Prediction"], answer: "d" },
+            { q: "Who discovered Fibonacci Numbers?", options: ["Leonardo Pisano", "Leonard Pisano", "Leonardo Pisiano", "Leonardo Da Vinci"], answer: "a" },
+            { q: "It is a special number found by dividing a line into two parts.", options: ["Golden Ratio", "Golden set", "Line Segment", "Golden number"], answer: "a" },
+            { q: "The set C = {d, i, r, t}, is an example of:", options: ["Infinite Set", "Finite Set", "Empty Set", "Universal Set"], answer: "b" },
+            { q: "Longer part divided by the smaller part is equal to the whole length divided by the longer part.", options: ["Golden Ratio", "Deductive", "Fibonacci Number", "Inductive"], answer: "a" },
+            { q: "Which SQL clause combines rows from two or more tables based on a related column?", options: ["COMBINE", "JOIN", "UNION", "MERGE"], answer: "b" },
+            { q: "Which is not true about PHP?", options: ["PHP scripts are executed on the server", "PHP is Hyperlink Preprocessor", "PHP is free to download and use", "PHP is a widely-used, open source scripting language"], answer: "b" },
+            { q: "The following are what PHP can do. Which is not?", options: ["PHP can send and receive cookies", "PHP can be used to control user-access", "PHP can't encrypt data", "PHP can generate dynamic page content"], answer: "c" },
+            { q: "What PHP variable starts with?", options: ["$", "&", "^", "x"], answer: "a" },
+            { q: "Which JOIN returns only matching records from both tables?", options: ["LEFT JOIN", "INNER JOIN", "FULL JOIN", "RIGHT JOIN"], answer: "b" },
+            { q: "It is the part of script where the variable can be referenced/used.", options: ["website", "Hyperlink Protocol", "scope of variable", "Http"], answer: "c" },
+            { q: "Differentiate echo and print statements.", options: ["No differences at all", "echo has no return value while print has a return value", "echo has return value while print has not a return value", "print has no return value while echo has a return value"], answer: "b" },
+            { q: "Double quoted strings perform action on special characters.", options: ["True", "False", "no", "B and C"], answer: "a" },
+            { q: "Strings in PHP are not surrounded by either double quotation marks, or single quotation marks.", options: ["Option C is correct and letter B is also correct", "False, and letter C is correct", "False and option A is wrong", "True and Option B is not correct"], answer: "b" },
+            { q: "Variables are 'containers' for storing information.", options: ["True", "False", "A and B", "None of the above"], answer: "a" },
+            { q: "There are three main numeric types in PHP. What are those?", options: ["Variables, String, Integers", "Integer, Float, Number Strings", "Number Strings, Echo, Variables", "Variables, Float, String"], answer: "b" },
+            { q: "Here are some rules of integers except one.", options: ["An integer must NOT have a decimal point", "An integer should have a decimal point", "An integer must have at least one digit", "An integer can be either positive or negative"], answer: "b" },
+            { q: "It is a number with a decimal point or a number in exponential form.", options: ["Floats", "Integers", "Fraction", "Number Strings"], answer: "a" },
+            { q: "Which JOIN returns all records from the right table and matching records from the left table?", options: ["RIGHT JOIN", "LEFT JOIN", "INNER JOIN", "FULL JOIN"], answer: "a" },
+            { q: "An integer can be either positive or negative.", options: ["False", "A is correct and option C is wrong", "True is the answer but option B is also correct", "True is the answer and option B is wrong"], answer: "d" },
+            { q: "What is a Self Join?", options: ["Joining two different databases", "Joining three tables", "Joining a table with itself", "Joining without a condition"], answer: "c" },
+            { q: "Which constraint uniquely identifies each record in a table and cannot contain NULL values?", options: ["PRIMARY KEY", "FOREIGN KEY", "UNIQUE", "CHECK"], answer: "a" },
+            { q: "Which SQL statement is used to create a new database?", options: ["MAKE DATABASE db_name;", "NEW DATABASE db_name;", "CREATE DATABASE db_name;", "ADD DATABASE db_name;"], answer: "c" },
+            { q: "Which SQL statement permanently deletes a database?", options: ["REMOVE DATABASE db_name;", "DELETE DATABASE db_name;", "DROP DATABASE db_name;", "ERASE DATABASE db_name;"], answer: "c" },
+            { q: "Which statement is used to create a new table?", options: ["NEW TABLE table_name (...);", "CREATE TABLE table_name (...);", "ADD TABLE table_name (...);", "MAKE TABLE table_name (...);"], answer: "b" },
+            { q: "Which SQL command modifies the structure of an existing table?", options: ["UPDATE TABLE", "ALTER TABLE", "CHANGE TABLE", "MODIFY TABLE"], answer: "b" },
+            { q: "SQL constraints are used to:", options: ["Limit the type of data that can be stored", "Format data display", "Speed up queries", "Delete duplicate records automatically"], answer: "a" },
+            { q: "What is the decimal value of the binary number 1010?", options: ["8", "12", "10", "14"], answer: "c" },
+            { q: "What is the decimal value of the binary number 111?", options: ["5", "7", "8", "9"], answer: "b" },
+            { q: "Variables are containers for storing data values, like numbers and characters.", options: ["False, but option B says true so, it's wrong", "True, and option C is not correct", "False, and option A is wrong", "True, but option C is correct"], answer: "b" },
+            { q: "What is the decimal value of the binary number 1001?", options: ["7", "8", "9", "10"], answer: "c" },
+            { q: "What is the binary equivalent of the decimal number 31?", options: ["10111", "11111", "10110", "11110"], answer: "b" },
+            { q: "What will be the output of the following expression? echo (10 > 5) && (5 > 8);", options: ["0", "1", "True", "False"], answer: "a" },
+            { q: "The _____ is used to assign a value to the variable.", options: ["Minus sign", "Addition sign", "Division Sign", "Equal sign"], answer: "d" },
+            { q: "What will be the output of the expression below? echo 10 + '5 apples';", options: ["10", "15", "105", "Error"], answer: "b" },
+            { q: "When PHP reaches a ______ keyword, it breaks out of the switch block.", options: ["Default", "Break", "Block", "Reaches"], answer: "b" },
+            { q: "It is a statement is used to perform different actions based on different conditions.", options: ["Switch", "Outlet", "Loops", "Break"], answer: "a" },
+            { q: "When PHP reaches a default keyword, it breaks out of the switch block.", options: ["True, but option D is correct", "False, and letter C is wrong", "True and option D is wrong.", "False, but option A is not wrong."], answer: "c" },
+            { q: "The break code block is executed if there is no match.", options: ["False, but letter C is correct", "True, but option D is also correct", "False and letter D is not correct", "True, while option B is also correct"], answer: "a" },
+            { q: "The ______ code block is executed if there is no match.", options: ["Default", "Break", "Switch", "Block"], answer: "a" },
+            { q: "_____ are used to execute the same block of code again and again, as long as a certain condition is true.", options: ["Switch", "Break", "Loops", "Default"], answer: "c" },
+            { q: "do...while loops through a block of code as long as the specified condition is true.", options: ["False, but perhaps D is the answer", "True, but option A is not wrong", "False, but option D is not correct", "True, and options A maybe not wrong"], answer: "b" },
+            { q: "_____ loops through a block of code a specified number of times.", options: ["While", "for", "do...while", "switch"], answer: "b" },
+            { q: "_____ loops through a block of code as long as the specified condition is true.", options: ["While", "for", "do...while", "switch"], answer: "a" },
+            { q: "foreach- loops through a block of code for each element in an array.", options: ["True, but option C is wrong", "False, and option A is wrong", "True, but D is also not wrong", "False, but option A is wrong"], answer: "a" },
+            { q: "A user-defined function declaration starts with the keyword ________, followed by the name of the function.", options: ['"Hello world!";}', "function", "Arguments", "myMessage()"], answer: "b" },
+            { q: "By using the _____ operator in front of the function parameter, the function accepts an unknown number of arguments.", options: ["[]", "{}", "...", "()"], answer: "c" },
+            { q: "This are specified after the function name, inside the parentheses.", options: ["Operator", "Arguments", "Function", "myMessage()"], answer: "b" },
+            { q: "What will happen If the variadic argument is not the last argument?", options: ["You will get an error.", "You can only have one argument with variable length.", "Variadic function argument becomes an array.", "You can do things like adding a string to an integer without causing an error."], answer: "a" },
+            { q: "To declare a type for the function return, add a _______.", options: ["Colon", "Parenthesis", "Bracket", "Apostrophe"], answer: "a" },
+            { q: "A special variable that can hold many values under a single name, and you can access the values by referring to an index number or name.", options: ["Variadic argument", "Array", "Argument", "Function"], answer: "b" },
+            { q: "Arrays with named keys.", options: ["Indexed Array", "Associative Arrays", "Multidimensional Arrays", "Arrays"], answer: "b" },
+            { q: "The following are not the definition of a function. Find the correct one.", options: ["The most common are strings and numbers (int, float), but array items can also be objects, functions or even arrays.", "Automatically associates a data type to the variable, depending on its value.", "Gives us an option to specify the expected data type and the variable that was passed into the function cannot be changed.", "Will be executed by a call to the function."], answer: "d" },
+            { q: "How many indices that you need for a three-dimensional array to select an element?", options: ["2", "1 below", "3", "2 and above"], answer: "c" },
+            { q: "What punctuation you will use in separating an arguments?", options: ["Parenthesis", "Period", "Hyphen", "Comma"], answer: "d" },
+            { q: "What is the primary purpose of system maintenance?", options: ["To design new software", "To develop hardware", "To ensure system performance, security, and stability", "To build user interfaces"], answer: "c" },
+            { q: "Why are software updates important in system maintenance?", options: ["They increase the size of your files", "They slow down system performance", "They often include security patches and performance improvements", "They delete temporary files"], answer: "c" },
+            { q: "What is the purpose of creating restore points?", options: ["To reset the BIOS", "To prevent malware attacks", "To return the system to a previous state if something goes wrong", "To uninstall software"], answer: "c" },
+            { q: "Which type of maintenance involves fixing bugs found after system deployment?", options: ["Preventive Maintenance", "Adaptive Maintenance", "Corrective Maintenance", "Perfective Maintenance"], answer: "c" },
+            { q: "What should be done before performing major system updates?", options: ["Disable the firewall", "Uninstall antivirus software", "Create a full system backup", "Delete system files"], answer: "c" },
+            { q: "What is the purpose of data backup in system maintenance?", options: ["To improve the system's processing speed.", "To prevent data loss in case of system failure or disaster.", "To encrypt sensitive information for security.", "To compress data and save storage space."], answer: "b" },
+            { q: "Which of the following is an example of hardware maintenance?", options: ["Defragmenting a hard drive.", "Installing a new operating system.", "Cleaning dust from computer components.", "Updating antivirus software."], answer: "c" },
+            { q: "Why is user account management an important part of system maintenance?", options: ["To track user activity for marketing purposes.", "To ensure system security and appropriate access to resources.", "To personalize the user experience with custom settings.", "To generate reports on user productivity."], answer: "b" },
+            { q: "Capacity planning in system maintenance involves:", options: ["Determining the maximum number of users the system can handle.", "Anticipating future resource needs based on current usage.", "Optimizing the system's energy consumption.", "Scheduling regular maintenance windows."], answer: "b" },
+            { q: "Which of the following is NOT typically considered a system maintenance task?", options: ["Software installation.", "Hardware repair.", "User training.", "Security auditing."], answer: "c" },
+            { q: "What does the shortcut Ctrl+T (Cmd+T on Mac) do in Photoshop?", options: ["Opens a new tab", "Activates Free Transform", "Selects text", "Applies a layer mask"], answer: "b" },
+            { q: "Which file format should you use to save a Photoshop project with all layers intact for future editing?", options: ["JPG", "PNG", "PSD", "GIF"], answer: "c" },
+            { q: "The Pen Tool is primarily used for:", options: ["Drawing freehand sketches", "Painting with patterns", "Making precise paths and selections", "Creating blur effects"], answer: "c" },
+            { q: "Which panel shows the hierarchy of all layers in your project?", options: ["History Panel", "Tools Panel", "Layers Panel", "Navigator Panel"], answer: "c" },
+            { q: "What is the use of the 'Clipping Mask'?", options: ["To crop the entire canvas", "To combine multiple layers", "To apply one layer's visibility within another's shape", "To flatten an image"], answer: "c" },
+            { q: "Which tool in Photoshop is commonly used for making selections with irregular shapes?", options: ["Rectangular Marquee Tool", "Elliptical Marquee Tool", "Lasso Tool", "Crop Tool"], answer: "c" },
+            { q: "What is the function of a mask in Adobe Photoshop?", options: ["To apply a filter to a specific area.", "To hide or reveal portions of a layer.", "To merge multiple layers together.", "To add a border around an image."], answer: "b" },
+            { q: "Which of the following color modes is best suited for images intended for web use?", options: ["CMYK", "RGB", "Grayscale", "Lab Color"], answer: "b" },
+            { q: "Which menu in Photoshop contains options for resizing and cropping an image?", options: ["Edit", "Layer", "Image", "Select"], answer: "c" },
+            { q: "What is the term for the visual hierarchy and arrangement of elements within a design?", options: ["Resolution", "Composition", "Saturation", "Opacity"], answer: "b" },
+            { q: "What does HTML stand for?", options: ["Hyperlinks and Text Markup Language", "Home Tool Markup Language", "Hyper Text Markup Language", "Hyper Tool Markup Language"], answer: "c" },
+            { q: "What is the correct HTML element for inserting a line break?", options: ["&lt;break&gt;", "&lt;br&gt;", "&lt;lb&gt;", "&lt;line&gt;"], answer: "b" },
+            { q: "Which HTML element is used for the largest heading?", options: ["&lt;head&gt;", "&lt;h6&gt;", "&lt;heading&gt;", "&lt;h1&gt;"], answer: "d" },
+            { q: "What is the purpose of the <title> tag in HTML?", options: ["To style the page title", "To set the font of the webpage", "To specify the title of the webpage in the browser tab", "To add subtitles to paragraphs"], answer: "c" },
+            { q: "What is the correct HTML for creating a hyperlink?", options: ["&lt;a&gt;http://example.com&lt;/a&gt;", "&lt;link&gt;example.com&lt;/link&gt;", '&lt;a href="http://example.com"&gt;Visit&lt;/a&gt;', "&lt;url&gt;http://example.com&lt;/url&gt;"], answer: "c" },
+            { q: "Which tag is used to display an image in HTML?", options: ["&lt;image&gt;", "&lt;img&gt;", "&lt;src&gt;", "&lt;pic&gt;"], answer: "b" },
+            { q: "How can you apply a style to a single element in HTML?", options: ["Using a class", "Using a stylesheet", "Using the style attribute", "All of the above"], answer: "c" },
+            { q: "Which CSS property is used to change the background color?", options: ["color", "bgcolor", "background-color", "bg-color"], answer: "c" },
+            { q: "Which is the correct CSS syntax?", options: ["{body:color=black;}", "body {color: black;}", "body:color=black;", "{body;color:black;}"], answer: "b" },
+            { q: "How do you insert a comment in CSS?", options: ["// this is a comment", "/* this is a comment */", "# this is a comment", "&lt;!-- this is a comment --&gt;"], answer: "b" },
+            { q: "Which property is used to change the text color in CSS?", options: ["font-color", "text-color", "color", "fgcolor"], answer: "c" },
+            { q: "How do you select an element with id 'header' in CSS?", options: ["#header", ".header", "header", "*header"], answer: "a" },
+            { q: "Which HTML tag is used to define a table?", options: ["<tr>", "<table>", "<td>", "<tab>"], answer: "b" },
+            { q: "What does the padding property do in CSS?", options: ["Sets the space outside the element", "Sets the space between the element border and content", "Sets the text spacing", "Sets the space between lines"], answer: "b" },
+            { q: "In HTML5, which tag is used to represent navigation links?", options: ["<nav>", "<navigate>", "<navigation>", "<link>"], answer: "a" },
+            { q: "Which tag defines an unordered list?", options: ["&lt;ul&gt;", "&lt;ol&gt;", "&lt;list&gt;", "&lt;li&gt;"], answer: "a" },
+            { q: "Which tag is used for inserting JavaScript into an HTML page?", options: ["<js>", "<javascript>", "<script>", "<code>"], answer: "c" },
+            { q: "Which CSS property controls the font?", options: ["text-style", "font-style", "font-family", "text-family"], answer: "c" },
+            { q: "How do you make a list that lists the items with numbers?", options: ["&lt;ul&gt;", "&lt;dl&gt;", "&lt;ol&gt;", "&lt;list&gt;"], answer: "c" },
+            { q: "What is the default display value of a <div> element?", options: ["inline", "inline-block", "block", "flex"], answer: "c" },
+            { q: "What is a device driver?", options: ["A hardware component", "A program that allows hardware to interact with the operating system", "A manual for operating system installation", "A backup tool for system files"], answer: "b" },
+            { q: "Why is it important to install the correct device driver?", options: ["To improve computer speed", "To ensure proper operation of the hardware", "To protect the hardware from viruses", "To enhance computer graphics"], answer: "b" },
+            { q: "Which of the following is NOT a common method of installing a device driver?", options: ["Using an installation disc", "Downloading from the manufacturer's website", "Installing through a removable storage device", "Editing the device configuration manually"], answer: "d" },
+            { q: "What is the first step when installing a driver from a manufacturer's website?", options: ["Download the correct driver", "Insert a USB drive", "Launch the setup.exe file", "Search for the device manual"], answer: "a" },
+            { q: "What should you do before beginning any driver installation process?", options: ["Uninstall the operating system", "Scan the driver file with protection software", "Restart the computer", "Disconnect all external devices"], answer: "b" },
+            { q: "What should you do if the Auto-Install feature of a driver installation CD does not work?", options: ["Restart the computer", "Locate and run the 'setup.exe' file manually", "Use a different computer", "Reinstall the operating system"], answer: "b" },
+            { q: "What is the purpose of a 'README.TXT' file in a driver installation CD?", options: ["To provide the license agreement", "To show a list of compatible devices", "To install the driver automatically", "To provide helpful information or instructions"], answer: "d" },
+            { q: "What is the main advantage of using a universal driver pack?", options: ["It eliminates the need for device-specific drivers", "It can automatically download missing hardware drivers", "It offers a simplified installation process for multiple devices", "It requires no internet connection"], answer: "c" },
+            { q: "What type of storage can be used to distribute device drivers other than CDs or DVDs?", options: ["Cloud storage only", "Flash drives or portable devices", "Hard drives only", "External keyboards"], answer: "b" },
+            { q: "What should you do if the driver version does not match your operating system?", options: ["Install it anyway", "Look for the correct version on the manufacturer's website", "Skip the installation", "Disable the hardware"], answer: "b" },
+            { q: "What is a common final step after successfully installing a device driver?", options: ["Disconnect the device", "Run a virus scan", "Reboot the computer", "Uninstall the driver"], answer: "c" },
+            { q: "What is the primary difference between a Desktop App and a Mobile App?", options: ["Desktop Apps run on smartphones, while Mobile Apps run on computers.", "Desktop Apps run on personal computers or laptops, while Mobile Apps run on mobile devices.", "Desktop Apps are only used for gaming, while Mobile Apps are used for work.", "Desktop Apps do not require installation, while Mobile Apps do."], answer: "b" },
+            { q: "Which type of application runs directly from the internet without being installed on the local computer?", options: ["Desktop App", "Web App", "Mobile App", "Portable App"], answer: "b" },
+            { q: "What is the first step before installing any application software?", options: ["Insert the installation disc", "Reboot the system", "Verify the target system meets the hardware requirements", "Download the software"], answer: "c" },
+            { q: "Why is it important to check software compatibility with the operating system?", options: ["To ensure the software runs smoothly", "To avoid hardware damage", "To speed up the installation process", "To prevent antivirus interference"], answer: "a" },
+            { q: "What should you do if the setup wizard does not launch automatically from the installation disc?", options: ["Restart the computer", "Open Explorer and double-click the setup or Autorun file", "Remove and reinsert the disc", "Disable antivirus protection"], answer: "b" },
+            { q: "What is the recommended action after completing the installation of software?", options: ["Uninstall unnecessary programs", "Reboot the system", "Disable antivirus", "Run the setup wizard again"], answer: "b" },
+            { q: "What should you do if you encounter an error during software installation?", options: ["Ignore the error and continue the process", "Verify system requirements and disk space availability", "Immediately reinstall the operating system", "Skip the software installation"], answer: "b" },
+            { q: "Which of the following is NOT a reason why software installation might fail?", options: ["Insufficient disk space", "Outdated operating system", "Compatibility with the operating system", "Correct date on the computer"], answer: "d" },
+            { q: "If a program does not run properly after installation, what should you try first?", options: ["Close all other programs and try again", "Reinstall the operating system", "Replace the installation disc", "Modify the hardware settings"], answer: "a" },
+            { q: "What should you do before disabling antivirus software during installation?", options: ["Ensure the software is legitimate", "Reboot the computer", "Format the hard drive", "Disconnect from the internet"], answer: "a" },
+            { q: "What is the purpose of downloading software updates from the developer's website?", options: ["To avoid using a setup wizard", "To install outdated software versions", "To fix compatibility or performance issues", "To bypass system requirements"], answer: "c" },
+            { q: "What step is required when installing software from the internet?", options: ["Insert a backup CD", "Disable firewall protection", "Download the setup file and run it", "Update the computer's BIOS"], answer: "c" },
+            { q: "If a software program causes problems after installation, what should you do first?", options: ["Uninstall the program", "Delete system files", "Format the hard drive", "Disable all background processes"], answer: "a" },
+            { q: "What is the purpose of checking the system requirements before installation?", options: ["To ensure system security", "To verify that the software will run correctly", "To increase internet speed", "To remove unused files"], answer: "b" },
+            { q: "Which step is required to install Google Chrome from the internet?", options: ["Open Explorer and find the Autorun file", "Insert the installation disc", "Visit the Chrome download site and run the downloaded setup file", "Disable system updates"], answer: "c" },
+            { q: "What can be done if a program doesn't load properly after installation?", options: ["Check for patches or updates from the developer", "Ignore the problem and try other programs", "Modify the registry settings manually", "Install additional antivirus software"], answer: "a" },
+            { q: "What is the recommended action if the program fails to install due to a CD error?", options: ["Clean the CD and try again", "Restart the computer multiple times", "Format the computer's hard drive", "Ignore the issue and proceed"], answer: "a" },
+            { q: "What does BIOS stand for?", options: ["Basic Input/Output System", "Basic Information Output Setup", "Binary Input/Output System", "Basic Interactive Operating System"], answer: "a" },
+            { q: "What is the primary function of the BIOS?", options: ["To act as a graphical user interface", "To manage hardware drivers for applications", "To initialize and test hardware during startup", "To install operating systems"], answer: "c" },
+            { q: "Which of the following tools is necessary when assembling a computer?", options: ["Anti-static wrist strap", "Needle-nose pliers", "Phillips-head screwdriver", "All of the above"], answer: "d" },
+            { q: "What should be done before installing a motherboard?", options: ["Install the processor", "Align the DIMMs", "Unplug the power cord and hold the components by their edges", "Connect the CPU fan"], answer: "c" },
+            { q: "Why is it important to use an anti-static wrist strap when assembling a computer?", options: ["To prevent injury from sharp components", "To avoid damaging electronic components with static electricity", "To make it easier to hold small parts", "To ensure proper alignment of the motherboard"], answer: "b" },
+            { q: "What is the first step when installing a sound card in a computer?", options: ["Install the drivers for the sound card", "Open the computer case", "Ground yourself by touching the metal casing", "Turn off the computer and unplug it from the power source"], answer: "d" },
+            { q: "Which of the following tools is recommended to remove dust from older computer parts during assembly?", options: ["Needle-nose pliers", "A Phillips-head screwdriver", "A can of compressed air", "Electrical tape"], answer: "c" },
+            { q: "Which of these should you check before installing a motherboard into the chassis?", options: ["That the power supply is connected", "The configuration of the chassis to ensure the motherboard fits", "The type of graphics card installed", "That all drivers are updated"], answer: "b" },
+            { q: "When installing RAM, why is it important to align the notch on the RAM with the DIMM slot key?", options: ["To prevent static electricity", "To ensure proper orientation and avoid damage", "To secure the RAM into place", "To reduce the voltage supplied to the RAM"], answer: "b" },
+            { q: "What should be applied between the CPU and the heat sink during assembly to improve thermal conductivity?", options: ["Electrical tape", "Thermal paste", "Conductive gel", "Copper wire"], answer: "b" },
+            { q: "When installing a power supply unit (PSU), which of the following is important to verify?", options: ["The PSU's weight matches the motherboard", "The PSU has integrated graphics", "The PSU provides enough wattage for all components", "The PSU has more than 5 SATA connectors"], answer: "c" },
+            { q: "Which of these components is commonly installed in PCIe slots on a motherboard?", options: ["Hard drive", "RAM sticks", "Graphics cards", "USB drives"], answer: "c" },
+            { q: "Which of the following is an example of an input device?", options: ["Printer", "Monitor", "Mouse", "Speaker"], answer: "c" },
+            { q: "What is the primary function of an output device?", options: ["To process data.", "To receive and display or reproduce data from a computer.", "To store data for future use.", "To provide data to the computer for processing."], answer: "b" },
+            { q: "Which of the following is classified as secondary storage?", options: ["RAM", "SSD", "CPU", "Cache memory"], answer: "b" },
+            { q: "Which storage device is typically removable and can store from 4 GB to 128 GB of data?", options: ["Flash drive", "HDD", "Optical disc", "NAS"], answer: "a" },
+            { q: "Which refers to networked storage where data is stored on virtualized pools hosted by third parties?", options: ["Network-attached storage (NAS)", "Flash memory", "Cloud storage", "External drive"], answer: "c" },
+            { q: "Which type of software allows users to modify the source code and share it with others?", options: ["Proprietary software", "Freeware", "Open-source software", "Shareware"], answer: "c" },
+            { q: "Which of the following is an example of system software?", options: ["Microsoft Word", "Operating system", "Adobe Photoshop", "Facebook"], answer: "b" },
+            { q: "What is middleware software primarily used for?", options: ["Managing external devices", "Allowing system software to communicate with application software", "Running antivirus programs", "Hosting websites"], answer: "b" },
+            { q: "Which of the following is an example of shareware?", options: ["Netflix", "Microsoft Office (Trial version)", "LibreOffice", "Google Chrome"], answer: "b" },
+            { q: "What is the main reason technicians should guard against static electricity?", options: ["To prevent electrical shock to themselves.", "To protect sensitive computer components from damage", "To keep the computer clean.", "To improve the computer's performance."], answer: "b" },
+            { q: "How many volts of static electricity are needed to damage sensitive components like RAM?", options: ["10 volts", "100 volts", "1000 volts", "30 volts"], answer: "d" },
+            { q: "Which of the following is NOT a type of hazard identified under Occupational Health and Safety?", options: ["Mechanical", "Chemical", "Social", "Psychological"], answer: "c" },
+            { q: "In the 'Think Safe' process for managing health and safety, which step comes first?", options: ["Assess the Risk", "Spot the Hazard", "Implement Control Measures", "Report the Hazard"], answer: "b" },
+            { q: "Which of the following is classified as a biological hazard?", options: ["Noise and vibration", "Insects and bacteria", "Electrical equipment", "Toxic fumes"], answer: "b" },
+            { q: "Which personal protective equipment (PPE) is specifically used to prevent electrical shock?", options: ["Rubber soles", "Goggles", "Gloves", "Apron"], answer: "a" },
+            { q: "What is the purpose of an anti-static wrist strap when working on a computer?", options: ["To prevent electrocution", "To equalize the voltage between you and the computer", "To protect the computer from overheating", "To clean the computer safely"], answer: "b" },
+            { q: "What does the first 'S' in the 5S methodology stand for?", options: ["Sort", "Shine", "Standardize", "Sustain"], answer: "a" },
+            { q: "What is the primary function of the Central Processing Unit (CPU)?", options: ["Storing data", "Displaying graphics", "Processing instructions", "Connecting to the internet"], answer: "c" },
+            { q: "Which component stores data and programs even when the computer is turned off?", options: ["RAM", "CPU", "Hard drive", "Monitor"], answer: "c" },
+            { q: "What does RAM stand for?", options: ["Random Access Memory", "Read-Only Memory", "Rapid Application Manager", "Real-time Access Module"], answer: "a" },
+            { q: "Which computer port is used for connecting devices like keyboards, mice, and printers?", options: ["HDMI", "USB", "Ethernet", "VGA"], answer: "b" },
+            { q: "What is the purpose of a graphics card (GPU)?", options: ["To store user data", "To provide power to the CPU", "To display images and graphics on the monitor", "To connect to the internet"], answer: "c" },
+            { q: "Which component provides power to other hardware components in a desktop?", options: ["Hard drive", "CPU", "Power supply unit", "RAM"], answer: "c" },
+            { q: "Why is it essential to specify software requirements in a system specification?", options: ["To choose the best monitor", "To ensure compatibility and functionality", "To determine physical dimensions", "To optimize power consumption"], answer: "b" },
+            { q: "What should you do first before repairing a computer?", options: ["Turn it on", "Remove the RAM", "Plug it in", "Turn off the power and unplug it"], answer: "d" }
+        ];
+
+        // Helper function to decode HTML entities
+        function decodeHTML(html) {
+            var txt = document.createElement('textarea');
+            txt.innerHTML = html;
+            return txt.value;
+        }
+
+        // Helper function to escape HTML entities
+        function escapeHTML(str) {
+            if (str === undefined || str === null) return '';
+            return String(str).replace(/&/g, '&amp;')
+                      .replace(/</g, '&lt;')
+                      .replace(/>/g, '&gt;')
+                      .replace(/"/g, '"')
+                      .replace(/'/g, '&#039;');
+        }
+
+        // User answers storage
+        let userAnswers = {};
+        let currentUsername = '';
+
+        // LocalStorage keys
+        const STORAGE_KEY_ANSWERS = 'exam_answers_';
+        const STORAGE_KEY_USERNAME = 'exam_username_';
+        const STORAGE_KEY_SCORE = 'exam_score_';
+        const STORAGE_KEY_WRONG = 'exam_wrong_answers_';
+
+        // Check for saved progress on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedUsername = localStorage.getItem('quiz_username');
+            if (savedUsername) {
+                document.getElementById('saved-username').textContent = savedUsername;
+                document.getElementById('username').value = savedUsername;
+                document.getElementById('existing-user').classList.remove('hidden');
+                
+                // Check for saved score
+                const savedScore = localStorage.getItem(STORAGE_KEY_SCORE + savedUsername);
+                const savedWrong = localStorage.getItem(STORAGE_KEY_WRONG + savedUsername);
+                if (savedScore !== null) {
+                    const scoreInfo = document.createElement('div');
+                    scoreInfo.className = 'mt-2 p-2 bg-blue-50 rounded-lg';
+                    scoreInfo.innerHTML = `
+                        <p class="text-sm text-blue-600 font-medium">Previous Score: ${savedScore}/215 (${Math.round((savedScore/215)*100)}%)</p>
+                        <p class="text-xs text-red-600">Wrong Answers: ${savedWrong}</p>
+                    `;
+                    document.getElementById('existing-user').appendChild(scoreInfo);
+                }
+            }
+        });
+
+        // Start quiz with username
+        function startQuiz() {
+            const username = document.getElementById('username').value.trim();
+            
+            if (!username) {
+                document.getElementById('login-error').classList.remove('hidden');
+                return;
+            }
+            
+            document.getElementById('login-error').classList.add('hidden');
+            currentUsername = username;
+            
+            // Save username to localStorage
+            localStorage.setItem('quiz_username', username);
+            
+            // Load saved answers if any
+            const savedAnswers = localStorage.getItem(STORAGE_KEY_ANSWERS + username);
+            if (savedAnswers) {
+                userAnswers = JSON.parse(savedAnswers);
+            }
+            
+            // Show quiz screen
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            document.getElementById('display-username').textContent = username;
+            
+            // Render questions
+            renderQuestions();
+            
+            // Restore saved selections
+            restoreSelections();
+            
+            // Update progress
+            updateProgress();
+        }
+
+        // Render questions
+        function renderQuestions() {
+            const container = document.getElementById('questions-container');
+            const fragment = document.createDocumentFragment();
+            
+            questions.forEach((question, index) => {
+                const qNum = index + 1;
+                const card = document.createElement('div');
+                card.className = 'question-card bg-white rounded-lg shadow p-3 sm:p-5 border-l-4 border-blue-500';
+                card.id = 'question-' + qNum;
+                
+                const optionsHTML = ['a', 'b', 'c', 'd'].map((opt, idx) => `
+                    <label class="flex items-start sm:items-center p-2 sm:p-3 rounded-lg border-2 border-gray-200 cursor-pointer hover:bg-gray-50 transition duration-200 option-label" for="q${qNum}-${opt}">
+                        <input type="radio" name="question-${qNum}" id="q${qNum}-${opt}" value="${opt}" class="w-4 h-4 text-blue-600 mt-0.5 sm:mt-0 flex-shrink-0" onchange="selectAnswer(${qNum}, '${opt}')">
+                        <span class="ml-2 sm:ml-3 text-gray-700 text-xs sm:text-sm">
+                            <span class="font-medium text-blue-600 uppercase">${opt}.</span> ${escapeHTML(question.options[idx])}
+                        </span>
+                    </label>
+                `).join('');
+                
+                card.innerHTML = `
+                    <h3 class="text-sm sm:text-lg font-semibold text-gray-800 mb-2 sm:mb-4">
+                        <span class="bg-blue-600 text-white rounded-full w-6 h-6 sm:w-8 sm:h-8 inline-flex items-center justify-center mr-1 sm:mr-2 text-xs sm:text-sm">${qNum}</span>
+                        ${escapeHTML(question.q)}
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                        ${optionsHTML}
+                    </div>
+                `;
+                
+                fragment.appendChild(card);
+            });
+            
+            container.appendChild(fragment);
+        }
+
+        // Restore saved selections
+        function restoreSelections() {
+            Object.keys(userAnswers).forEach(qNum => {
+                const answer = userAnswers[qNum];
+                const radio = document.getElementById(`q${qNum}-${answer}`);
+                if (radio) {
+                    radio.checked = true;
+                    const questionCard = document.getElementById(`question-${qNum}`);
+                    const options = questionCard.querySelectorAll('.option-label');
+                    options.forEach(option => {
+                        const input = option.querySelector('input');
+                        if (input.checked) {
+                            option.classList.add('selected-answer');
+                        }
+                    });
+                }
+            });
+        }
+
+        // Handle answer selection
+        function selectAnswer(questionNum, answer) {
+            userAnswers[questionNum] = answer;
+            
+            // Save to localStorage
+            localStorage.setItem(STORAGE_KEY_ANSWERS + currentUsername, JSON.stringify(userAnswers));
+            
+            // Update UI
+            const questionCard = document.getElementById(`question-${questionNum}`);
+            const options = questionCard.querySelectorAll('.option-label');
+            
+            options.forEach(option => {
+                const input = option.querySelector('input');
+                option.classList.remove('selected-answer', 'correct-answer', 'wrong-answer');
+                
+                if (input.checked) {
+                    option.classList.add('selected-answer');
+                }
+            });
+            
+            updateProgress();
+        }
+
+        // Update progress
+        function updateProgress() {
+            const answered = Object.keys(userAnswers).length;
+            const total = questions.length;
+            const percentage = (answered / total) * 100;
+            
+            document.getElementById('progress-text').textContent = `${answered} / ${total}`;
+            document.getElementById('progress-bar').style.width = `${percentage}%`;
+            document.getElementById('answered-count').textContent = answered;
+        }
+
+        // Roast messages
+        const roastMessages = [
+            { min: 0, max: 10, messages: ["Were you even trying? 😅", "My grandmother could do better!", "This is embarrassing... for the exam!", "Did you guess randomly?", "Oof. That's rough.", "The bar was on the floor and you dug a hole!"] },
+            { min: 11, max: 20, messages: ["You tried, and that's what counts... barely.", "This score is in the danger zone!", "Study harder next time!", "At least you got more than zero...", "Better luck next time!"] },
+            { min: 21, max: 30, messages: ["Room for improvement! A LOT of improvement!", "You're getting there... very slowly though.", "Keep studying!", "At least it's not single digits!"] },
+            { min: 31, max: 40, messages: ["You're warming up! Keep going!", "Not great, but not terrible either.", "There's a passing grade out there somewhere...", "Almost at the halfway point... almost."] },
+            { min: 41, max: 50, messages: ["You're halfway there! ...literally.", "At this rate, you might pass! Maybe.", "Keep grinding!", "The light at the end of the tunnel is getting brighter!"] }
+        ];
+        
+        const congratMessages = [
+            { min: 51, max: 60, messages: ["You're passing! Sort of!", "Not bad at all!", "You're getting good at this!", "Keep it up!", "Almost there!"] },
+            { min: 61, max: 70, messages: ["Great job! You're doing well!", "Almost a B! So close!", "You're on fire!", "Keep up the excellent work!", "Impressive performance!"] },
+            { min: 71, max: 80, messages: ["Fantastic score!", "You're a star! ⭐", "Excellent work!", "You're nailing this!", "Amazing performance!"] },
+            { min: 81, max: 90, messages: ["Incredible! You're a genius!", "Top tier performance!", "Are you cheating? Just kidding!", "Absolutely brilliant!", "Masterclass performance!"] },
+            { min: 91, max: 100, messages: ["PERFECT OR NEAR PERFECT! 🏆", "You are the quiz master!", "Is there anything you don't know?", "Legendary score!", "Perfect! Just perfect!"] }
+        ];
+
+        // Get random message based on score
+        function getScoreMessage(percentage) {
+            let messagePool = [];
+            
+            for (let group of roastMessages) {
+                if (percentage >= group.min && percentage <= group.max) {
+                    messagePool = group.messages;
+                    break;
+                }
+            }
+            
+            if (messagePool.length === 0) {
+                for (let group of congratMessages) {
+                    if (percentage >= group.min && percentage <= group.max) {
+                        messagePool = group.messages;
+                        break;
+                    }
+                }
+            }
+            
+            return messagePool[Math.floor(Math.random() * messagePool.length)];
+        }
+
+        // Highlight unanswered questions
+        function highlightUnansweredQuestions() {
+            let firstUnanswered = null;
+            
+            questions.forEach((question, index) => {
+                const qNum = index + 1;
+                const userAnswer = userAnswers[qNum];
+                const questionCard = document.getElementById(`question-${qNum}`);
+                
+                if (!userAnswer) {
+                    questionCard.classList.add('unanswered-question');
+                    if (!firstUnanswered) {
+                        firstUnanswered = questionCard;
+                    }
+                } else {
+                    questionCard.classList.remove('unanswered-question');
+                }
+            });
+            
+            // Scroll to first unanswered question
+            if (firstUnanswered) {
+                firstUnanswered.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        // Submit quiz
+        function submitQuiz() {
+            let correct = 0;
+            let wrong = 0;
+            let unanswered = 0;
+            let wrongAnswersList = [];
+            
+            questions.forEach((question, index) => {
+                const qNum = index + 1;
+                const userAnswer = userAnswers[qNum];
+                
+                if (userAnswer === question.answer) {
+                    correct++;
+                } else if (userAnswer) {
+                    wrong++;
+                    wrongAnswersList.push({
+                        questionNum: qNum,
+                        question: question.q,
+                        userAnswer: userAnswer,
+                        correctAnswer: question.answer,
+                        userOptionText: question.options['abcd'.indexOf(userAnswer)],
+                        correctOptionText: question.options['abcd'.indexOf(question.answer)]
+                    });
+                } else {
+                    unanswered++;
+                }
+            });
+            
+            // Check if all questions are answered
+            if (unanswered > 0) {
+                highlightUnansweredQuestions();
+                const total = questions.length;
+                alert(`⚠️ INCOMPLETE!\n\nYou have answered ${total - unanswered} out of ${total} questions.\n${unanswered} question(s) are still unanswered!\n\nPlease answer all questions before submitting.`);
+                return;
+            }
+            
+            // Save score to localStorage
+            localStorage.setItem(STORAGE_KEY_SCORE + currentUsername, correct);
+            localStorage.setItem(STORAGE_KEY_WRONG + currentUsername, wrong);
+            
+            // Show results
+            const total = questions.length;
+            const percentage = Math.round((correct / total) * 100);
+            
+            document.getElementById('score-display').textContent = correct;
+            document.getElementById('percentage-display').textContent = percentage + '%';
+            document.getElementById('correct-count').textContent = correct;
+            document.getElementById('wrong-count').textContent = wrong;
+            
+            // Display wrong answers in results modal
+            const wrongAnswersSummary = document.getElementById('wrong-answers-summary');
+            const wrongAnswersListEl = document.getElementById('wrong-answers-list');
+            
+            if (wrong > 0) {
+                let wrongHtml = '';
+                wrongAnswersList.forEach((item) => {
+                    wrongHtml += `
+                        <div class="mb-2 pb-2 border-b border-red-200 last:border-0">
+                            <p class="font-medium text-sm text-gray-800">Q${item.questionNum}: ${escapeHTML(item.question.substring(0, 60))}${item.question.length > 60 ? '...' : ''}</p>
+                            <p class="text-xs text-red-600 mt-1">Your answer: ${item.userAnswer.toUpperCase()}. ${escapeHTML(item.userOptionText)}</p>
+                            <p class="text-xs text-green-600">Correct: ${item.correctAnswer.toUpperCase()}. ${escapeHTML(item.correctOptionText)}</p>
+                        </div>
+                    `;
+                });
+                wrongAnswersListEl.innerHTML = wrongHtml;
+                wrongAnswersSummary.classList.remove('hidden');
+            } else {
+                wrongAnswersSummary.classList.add('hidden');
+            }
+            
+            const messageDiv = document.getElementById('result-message');
+            messageDiv.textContent = 'You completed all questions!';
+            messageDiv.className = 'text-xs sm:text-sm text-green-600 mt-2';
+            
+            const roastDiv = document.getElementById('roast-message');
+            const message = getScoreMessage(percentage);
+            roastDiv.textContent = message;
+            
+            if (percentage < 50) {
+                roastDiv.className = 'text-xs sm:text-sm mt-2 font-medium text-red-500';
+            } else if (percentage < 70) {
+                roastDiv.className = 'text-xs sm:text-sm mt-2 font-medium text-yellow-600';
+            } else {
+                roastDiv.className = 'text-xs sm:text-sm mt-2 font-medium text-green-600';
+            }
+            
+            const scoreIcon = document.getElementById('score-icon');
+            if (percentage >= 70) {
+                scoreIcon.textContent = '🎉';
+                scoreIcon.className = 'text-4xl sm:text-6xl mb-2 sm:mb-4';
+            } else if (percentage >= 50) {
+                scoreIcon.textContent = '📚';
+                scoreIcon.className = 'text-4xl sm:text-6xl mb-2 sm:mb-4';
+            } else {
+                scoreIcon.textContent = '💪';
+                scoreIcon.className = 'text-4xl sm:text-6xl mb-2 sm:mb-4';
+            }
+            
+            document.getElementById('results-modal').classList.remove('hidden');
+            document.getElementById('submit-btn').disabled = true;
+            document.getElementById('submit-btn').classList.add('opacity-50', 'cursor-not-allowed');
+            
+            // Clear saved progress after submission
+            localStorage.removeItem(STORAGE_KEY_ANSWERS + currentUsername);
+        }
+
+        // Show all answers
+        function showAnswers() {
+            const reviewContainer = document.getElementById('answers-review');
+            let html = '';
+            
+            questions.forEach((question, index) => {
+                const qNum = index + 1;
+                const userAnswer = userAnswers[qNum];
+                const isCorrect = userAnswer === question.answer;
+                
+                html += `
+                    <div class="p-3 rounded-lg ${isCorrect ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}">
+                        <div class="flex items-start">
+                            <span class="font-bold ${isCorrect ? 'text-green-600' : 'text-red-600'} mr-2">${qNum}.</span>
+                            <div class="flex-1">
+                                <p class="text-sm text-gray-800">${escapeHTML(question.q)}</p>
+                                <div class="mt-2 text-sm">
+                                    <p><span class="font-medium">Your answer:</span> ${userAnswer ? userAnswer.toUpperCase() + '. ' + escapeHTML(question.options['abcd'.indexOf(userAnswer)]) : 'Not answered'}</p>
+                                    <p><span class="font-medium text-green-600">Correct answer:</span> ${question.answer.toUpperCase()}. ${escapeHTML(question.options['abcd'.indexOf(question.answer)])}</p>
+                                </div>
+                            </div>
+                            <span class="text-xl">${isCorrect ? '✓' : '✗'}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            reviewContainer.innerHTML = html;
+            document.getElementById('results-modal').classList.add('hidden');
+            document.getElementById('answers-modal').classList.remove('hidden');
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('results-modal').classList.add('hidden');
+        }
+
+        // Close answers modal
+        function closeAnswersModal() {
+            document.getElementById('answers-modal').classList.add('hidden');
+            document.getElementById('results-modal').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
+
