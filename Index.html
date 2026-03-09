@@ -64,6 +64,13 @@
         .dark-mode-toggle:hover {
             transform: scale(1.1);
         }
+        /* Flashing toggle button styles */
+        .flashing-toggle {
+            transition: all 0.3s ease;
+        }
+        .flashing-toggle:hover {
+            transform: scale(1.1);
+        }
     </style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 min-h-screen py-8 transition-colors duration-300">
@@ -109,6 +116,12 @@
                         <!-- Moon Icon (shown in light mode) -->
                         <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                             <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+                        </svg>
+                    </button>
+                    <!-- Flashing Toggle Button -->
+                    <button id="flashing-toggle" onclick="toggleFlashing()" class="flashing-toggle p-2 rounded-full bg-white/20 hover:bg-white/30 text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" />
                         </svg>
                     </button>
                 </div>
@@ -433,6 +446,14 @@
             { q: "What should you do first before repairing a computer?", options: ["Turn it on", "Remove the RAM", "Plug it in", "Turn off the power and unplug it"], answer: "d" }
         ];
 
+        // Helper function to shuffle array
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
         // Helper function to decode HTML entities
         function decodeHTML(html) {
             var txt = document.createElement('textarea');
@@ -459,6 +480,53 @@
         const STORAGE_KEY_USERNAME = 'exam_username_';
         const STORAGE_KEY_SCORE = 'exam_score_';
         const STORAGE_KEY_WRONG = 'exam_wrong_answers_';
+
+        // Flashing background
+        let flashingEnabled = true;
+        let flashingInterval;
+        let cardFlashingInterval;
+
+        function startFlashing() {
+            flashingInterval = setInterval(() => {
+                const randomColor = '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+                document.body.style.backgroundColor = randomColor;
+            }, 50);
+        }
+
+        function stopFlashing() {
+            clearInterval(flashingInterval);
+            document.body.style.backgroundColor = '';
+        }
+
+        function startCardFlashing() {
+            cardFlashingInterval = setInterval(() => {
+                const cards = document.querySelectorAll('.question-card');
+                cards.forEach(card => {
+                    const randomColor = '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+                    card.style.backgroundColor = randomColor;
+                });
+            }, 100);
+        }
+
+        function stopCardFlashing() {
+            clearInterval(cardFlashingInterval);
+            const cards = document.querySelectorAll('.question-card');
+            cards.forEach(card => {
+                card.style.backgroundColor = '';
+            });
+        }
+
+        function toggleFlashing() {
+            flashingEnabled = !flashingEnabled;
+            localStorage.setItem('flashingMode', flashingEnabled ? 'on' : 'off');
+            if (flashingEnabled) {
+                startFlashing();
+                startCardFlashing();
+            } else {
+                stopFlashing();
+                stopCardFlashing();
+            }
+        }
 
         // Check for saved progress on page load
         document.addEventListener('DOMContentLoaded', function() {
@@ -509,6 +577,9 @@
             document.getElementById('quiz-screen').classList.remove('hidden');
             document.getElementById('display-username').textContent = username;
             
+            // Shuffle questions for this exam
+            shuffleArray(questions);
+            
             // Render questions
             renderQuestions();
             
@@ -517,6 +588,11 @@
             
             // Update progress
             updateProgress();
+
+            // Start card flashing if enabled
+            if (flashingEnabled) {
+                startCardFlashing();
+            }
         }
 
         // Render questions
@@ -863,6 +939,15 @@ questions.forEach((question, index) => {
                 document.documentElement.classList.add('dark');
                 if (sunIcon) sunIcon.classList.remove('hidden');
                 if (moonIcon) moonIcon.classList.add('hidden');
+            }
+
+            // Check for flashing preference
+            const flashingPreference = localStorage.getItem('flashingMode');
+            if (flashingPreference !== 'off') {
+                flashingEnabled = true;
+                startFlashing();
+            } else {
+                flashingEnabled = false;
             }
         });
     </script>
