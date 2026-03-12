@@ -64,13 +64,6 @@
         .dark-mode-toggle:hover {
             transform: scale(1.1);
         }
-        /* Flashing toggle button styles */
-        .flashing-toggle {
-            transition: all 0.3s ease;
-        }
-        .flashing-toggle:hover {
-            transform: scale(1.1);
-        }
     </style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 min-h-screen py-8 transition-colors duration-300">
@@ -85,7 +78,24 @@
                 <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="username">Enter your name to start:</label>
                 <input type="text" id="username" placeholder="Your name" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 dark:text-gray-200 dark:bg-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-blue-500">
             </div>
-            <div id="login-error" class="text-red-500 text-sm mb-4 hidden">Please enter your name!</div>
+            <div class="mb-4">
+                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Select Exam Phase:</label>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <label class="flex items-center p-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600 transition-all">
+                        <input type="radio" name="phase" value="minor" id="phase-minor" class="w-4 h-4 text-blue-600">
+                        <span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">Minor (1-60)</span>
+                    </label>
+                    <label class="flex items-center p-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600 transition-all">
+                        <input type="radio" name="phase" value="major" id="phase-major" class="w-4 h-4 text-blue-600">
+                        <span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">Major (61-215)</span>
+                    </label>
+                    <label class="flex items-center p-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600 transition-all">
+                        <input type="radio" name="phase" value="both" id="phase-both" class="w-4 h-4 text-blue-600 checked:bg-blue-600">
+                        <span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">Both (All)</span>
+                    </label>
+                </div>
+            </div>
+            <div id="login-error" class="text-red-500 text-sm mb-4 hidden">Please enter your name and select a phase!</div>
             <button onclick="startQuiz()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg w-full transition duration-200">
                 Start Exam
             </button>
@@ -106,7 +116,7 @@
                     <p class="text-blue-100 text-sm sm:text-base">CSIT DEPT.</p>
                 </div>
 <div class="mt-2 sm:mt-0 text-right flex items-center gap-3">
-                    <p class="text-sm text-blue-200">Student: <span id="display-username" class="font-bold text-white"></span></p>
+<p class="text-sm text-blue-200">Student: <span id="display-username" class="font-bold text-white"></span> | <span id="phase-indicator" class="font-semibold bg-white/20 px-2 py-1 rounded text-xs uppercase">Full Exam</span></p>
                     <!-- Dark Mode Toggle Button -->
                     <button id="dark-mode-toggle" onclick="toggleDarkMode()" class="dark-mode-toggle p-2 rounded-full bg-white/20 hover:bg-white/30 text-white">
                         <!-- Sun Icon (shown in dark mode) -->
@@ -116,12 +126,6 @@
                         <!-- Moon Icon (shown in light mode) -->
                         <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                             <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
-                        </svg>
-                    </button>
-                    <!-- Flashing Toggle Button -->
-                    <button id="flashing-toggle" onclick="toggleFlashing()" class="flashing-toggle p-2 rounded-full bg-white/20 hover:bg-white/30 text-white">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" />
                         </svg>
                     </button>
                 </div>
@@ -167,7 +171,7 @@
                     <h2 class="text-xl sm:text-3xl font-bold mb-2 sm:mb-4 dark:text-white">Exam Results</h2>
                     <div class="bg-gray-100 dark:bg-gray-700 rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
                         <div class="text-3xl sm:text-5xl font-bold text-blue-600 dark:text-blue-400 mb-1 sm:mb-2" id="score-display">0</div>
-                        <div class="text-gray-600 dark:text-gray-400 text-sm sm:text-base">out of 215 correct</div>
+            <div class="text-gray-600 dark:text-gray-400 text-sm sm:text-base" id="total-score-text">out of <span id="total-score">215</span> correct</div>
                         <div class="text-xl sm:text-2xl font-semibold mt-1 sm:mt-2 dark:text-gray-300" id="percentage-display">0%</div>
                         <div id="result-message" class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-2"></div>
                         <div id="roast-message" class="text-xs sm:text-sm mt-2 font-medium"></div>
@@ -446,14 +450,6 @@
             { q: "What should you do first before repairing a computer?", options: ["Turn it on", "Remove the RAM", "Plug it in", "Turn off the power and unplug it"], answer: "d" }
         ];
 
-        // Helper function to shuffle array
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-        }
-
         // Helper function to decode HTML entities
         function decodeHTML(html) {
             var txt = document.createElement('textarea');
@@ -471,62 +467,26 @@
                       .replace(/'/g, '&#039;');
         }
 
-        // User answers storage
-        let userAnswers = {};
-        let currentUsername = '';
+// Shuffle utility function (Fisher-Yates algorithm)
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+// User answers storage
+let userAnswers = {};
+let currentUsername = '';
+let currentPhase = 'both';
 
         // LocalStorage keys
         const STORAGE_KEY_ANSWERS = 'exam_answers_';
         const STORAGE_KEY_USERNAME = 'exam_username_';
         const STORAGE_KEY_SCORE = 'exam_score_';
         const STORAGE_KEY_WRONG = 'exam_wrong_answers_';
-
-        // Flashing background
-        let flashingEnabled = true;
-        let flashingInterval;
-        let cardFlashingInterval;
-
-        function startFlashing() {
-            flashingInterval = setInterval(() => {
-                const randomColor = '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
-                document.body.style.backgroundColor = randomColor;
-            }, 50);
-        }
-
-        function stopFlashing() {
-            clearInterval(flashingInterval);
-            document.body.style.backgroundColor = '';
-        }
-
-        function startCardFlashing() {
-            cardFlashingInterval = setInterval(() => {
-                const cards = document.querySelectorAll('.question-card');
-                cards.forEach(card => {
-                    const randomColor = '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
-                    card.style.backgroundColor = randomColor;
-                });
-            }, 100);
-        }
-
-        function stopCardFlashing() {
-            clearInterval(cardFlashingInterval);
-            const cards = document.querySelectorAll('.question-card');
-            cards.forEach(card => {
-                card.style.backgroundColor = '';
-            });
-        }
-
-        function toggleFlashing() {
-            flashingEnabled = !flashingEnabled;
-            localStorage.setItem('flashingMode', flashingEnabled ? 'on' : 'off');
-            if (flashingEnabled) {
-                startFlashing();
-                startCardFlashing();
-            } else {
-                stopFlashing();
-                stopCardFlashing();
-            }
-        }
+        const STORAGE_KEY_PHASE = 'quiz_phase_';
 
         // Check for saved progress on page load
         document.addEventListener('DOMContentLoaded', function() {
@@ -536,17 +496,26 @@
                 document.getElementById('username').value = savedUsername;
                 document.getElementById('existing-user').classList.remove('hidden');
                 
-                // Check for saved score
-                const savedScore = localStorage.getItem(STORAGE_KEY_SCORE + savedUsername);
-                const savedWrong = localStorage.getItem(STORAGE_KEY_WRONG + savedUsername);
-                if (savedScore !== null) {
-                    const scoreInfo = document.createElement('div');
-                    scoreInfo.className = 'mt-2 p-2 bg-blue-50 rounded-lg';
-                    scoreInfo.innerHTML = `
-                        <p class="text-sm text-blue-600 font-medium">Previous Score: ${savedScore}/215 (${Math.round((savedScore/215)*100)}%)</p>
-                        <p class="text-xs text-red-600">Wrong Answers: ${savedWrong}</p>
-                    `;
-                    document.getElementById('existing-user').appendChild(scoreInfo);
+                // Check saved phases and scores
+                const savedPhase = localStorage.getItem(STORAGE_KEY_PHASE + savedUsername);
+                if (savedPhase) {
+                    const phaseRadio = document.getElementById('phase-' + savedPhase);
+                    if (phaseRadio) phaseRadio.checked = true;
+                    
+                    // Show phase-specific previous score
+                    const savedScore = localStorage.getItem(STORAGE_KEY_SCORE + savedUsername + '_' + savedPhase);
+                    const savedWrong = localStorage.getItem(STORAGE_KEY_WRONG + savedUsername + '_' + savedPhase);
+                    if (savedScore !== null) {
+                        const phaseName = savedPhase === 'minor' ? 'Minor' : savedPhase === 'major' ? 'Major' : 'Full';
+                        const scoreInfo = document.createElement('div');
+                        scoreInfo.className = 'mt-2 p-2 bg-blue-50 rounded-lg';
+                        const total = savedPhase === 'minor' ? 60 : savedPhase === 'major' ? 155 : 215;
+                        scoreInfo.innerHTML = `
+                            <p class="text-sm text-blue-600 font-medium">${phaseName} Phase Previous: ${savedScore}/${total} (${Math.round((savedScore/total)*100)}%)</p>
+                            <p class="text-xs text-red-600">Wrong: ${savedWrong}</p>
+                        `;
+                        document.getElementById('existing-user').appendChild(scoreInfo);
+                    }
                 }
             }
         });
@@ -554,53 +523,75 @@
         // Start quiz with username
         function startQuiz() {
             const username = document.getElementById('username').value.trim();
+            const phaseRadios = document.querySelectorAll('input[name="phase"]');
+            const selectedPhase = Array.from(phaseRadios).find(radio => radio.checked)?.value || 'both';
             
-            if (!username) {
+            if (!username || !selectedPhase) {
                 document.getElementById('login-error').classList.remove('hidden');
                 return;
             }
             
             document.getElementById('login-error').classList.add('hidden');
             currentUsername = username;
+            currentPhase = selectedPhase;
             
-            // Save username to localStorage
+            // Save username and phase to localStorage
             localStorage.setItem('quiz_username', username);
+            localStorage.setItem(STORAGE_KEY_PHASE + username, selectedPhase);
             
-            // Load saved answers if any
-            const savedAnswers = localStorage.getItem(STORAGE_KEY_ANSWERS + username);
+            // Load phase-specific saved answers
+            const phaseKey = STORAGE_KEY_ANSWERS + username + '_' + currentPhase;
+            const savedAnswers = localStorage.getItem(phaseKey);
             if (savedAnswers) {
                 userAnswers = JSON.parse(savedAnswers);
             }
+            
+            // Filter questions by phase
+            let filteredQuestions = [...questions]; // Copy to avoid mutating original
+            if (currentPhase === 'minor') {
+                filteredQuestions = questions.slice(0, 60);
+            } else if (currentPhase === 'major') {
+                filteredQuestions = questions.slice(60);
+            }
+            shuffleArray(filteredQuestions);
+            
+            // Store globally for other functions
+            window.currentQuestions = filteredQuestions;
+            window.totalQuestionsCount = filteredQuestions.length;
             
             // Show quiz screen
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('quiz-screen').classList.remove('hidden');
             document.getElementById('display-username').textContent = username;
             
-            // Shuffle questions for this exam
-            shuffleArray(questions);
+            // Set phase indicator
+            const phaseDisplay = currentPhase === 'minor' ? 'Minor Subjects' : 
+                                currentPhase === 'major' ? 'Major Subjects' : 'Full Exam';
+            document.getElementById('phase-indicator').textContent = phaseDisplay;
+            document.getElementById('phase-indicator').className = `font-semibold bg-white/20 px-2 py-1 rounded text-xs uppercase ${
+                currentPhase === 'minor' ? 'text-green-200' : 
+                currentPhase === 'major' ? 'text-yellow-200' : 'text-purple-200'
+            }`;
             
-            // Render questions
-            renderQuestions();
+            // Initial progress update
+            document.getElementById('progress-text').textContent = `0 / ${window.totalQuestionsCount}`;
             
-            // Restore saved selections
+            // Render filtered questions (will modify renderQuestions next)
+            renderQuestions(filteredQuestions);
+            
+            // Restore selections
             restoreSelections();
             
             // Update progress
             updateProgress();
-
-            // Start card flashing if enabled
-            if (flashingEnabled) {
-                startCardFlashing();
-            }
         }
 
-        // Render questions
-        function renderQuestions() {
+        // Render questions from filtered set
+        function renderQuestions(questionsToRender = window.currentQuestions || questions) {
             const container = document.getElementById('questions-container');
             const fragment = document.createDocumentFragment();
             
-questions.forEach((question, index) => {
+            questionsToRender.forEach((question, index) => {
                 const qNum = index + 1;
                 const card = document.createElement('div');
                 card.className = 'question-card bg-white dark:bg-gray-800 rounded-lg shadow p-3 sm:p-5 border-l-4 border-blue-500';
@@ -654,8 +645,9 @@ questions.forEach((question, index) => {
         function selectAnswer(questionNum, answer) {
             userAnswers[questionNum] = answer;
             
-            // Save to localStorage
-            localStorage.setItem(STORAGE_KEY_ANSWERS + currentUsername, JSON.stringify(userAnswers));
+            // Save to phase-specific localStorage
+            const phaseKey = STORAGE_KEY_ANSWERS + currentUsername + '_' + currentPhase;
+            localStorage.setItem(phaseKey, JSON.stringify(userAnswers));
             
             // Update UI
             const questionCard = document.getElementById(`question-${questionNum}`);
@@ -676,11 +668,11 @@ questions.forEach((question, index) => {
             updateProgress();
         }
 
-        // Update progress
+        // Update progress (phase-aware)
         function updateProgress() {
             const answered = Object.keys(userAnswers).length;
-            const total = questions.length;
-            const percentage = (answered / total) * 100;
+            const total = window.totalQuestionsCount || questions.length;
+            const percentage = total > 0 ? (answered / total) * 100 : 0;
             
             document.getElementById('progress-text').textContent = `${answered} / ${total}`;
             document.getElementById('progress-bar').style.width = `${percentage}%`;
@@ -731,7 +723,7 @@ questions.forEach((question, index) => {
         function highlightUnansweredQuestions() {
             let firstUnanswered = null;
             
-            questions.forEach((question, index) => {
+            (window.currentQuestions || questions).forEach((question, index) => {
                 const qNum = index + 1;
                 const userAnswer = userAnswers[qNum];
                 const questionCard = document.getElementById(`question-${qNum}`);
@@ -768,7 +760,8 @@ questions.forEach((question, index) => {
             let unanswered = 0;
             let wrongAnswersList = [];
             
-            questions.forEach((question, index) => {
+            const currentQ = window.currentQuestions || questions;
+            currentQ.forEach((question, index) => {
                 const qNum = index + 1;
                 const userAnswer = userAnswers[qNum];
                 
@@ -797,15 +790,17 @@ questions.forEach((question, index) => {
                 return;
             }
             
-            // Save score to localStorage
-            localStorage.setItem(STORAGE_KEY_SCORE + currentUsername, correct);
-            localStorage.setItem(STORAGE_KEY_WRONG + currentUsername, wrong);
+            // Save phase-specific score to localStorage
+            const phaseKey = STORAGE_KEY_ANSWERS + currentUsername + '_' + currentPhase;
+            localStorage.setItem(STORAGE_KEY_SCORE + currentUsername + '_' + currentPhase, correct);
+            localStorage.setItem(STORAGE_KEY_WRONG + currentUsername + '_' + currentPhase, wrong);
             
             // Show results
-            const total = questions.length;
+            const total = window.totalQuestionsCount || questions.length;
             const percentage = Math.round((correct / total) * 100);
             
             document.getElementById('score-display').textContent = correct;
+            document.getElementById('total-score').textContent = total;
             document.getElementById('percentage-display').textContent = percentage + '%';
             document.getElementById('correct-count').textContent = correct;
             document.getElementById('wrong-count').textContent = wrong;
@@ -872,7 +867,7 @@ questions.forEach((question, index) => {
             const reviewContainer = document.getElementById('answers-review');
             let html = '';
             
-questions.forEach((question, index) => {
+            (window.currentQuestions || questions).forEach((question, index) => {
                 const qNum = index + 1;
                 const userAnswer = userAnswers[qNum];
                 const isCorrect = userAnswer === question.answer;
@@ -940,17 +935,7 @@ questions.forEach((question, index) => {
                 if (sunIcon) sunIcon.classList.remove('hidden');
                 if (moonIcon) moonIcon.classList.add('hidden');
             }
-
-            // Check for flashing preference
-            const flashingPreference = localStorage.getItem('flashingMode');
-            if (flashingPreference !== 'off') {
-                flashingEnabled = true;
-                startFlashing();
-            } else {
-                flashingEnabled = false;
-            }
         });
     </script>
 </body>
 </html>
-
